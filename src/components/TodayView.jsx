@@ -1,8 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Tally from './Tally.jsx';
 import { startOf, endOf, entriesInRange, timeLabel } from '../dates.js';
 
-export default function TodayView({ items, entries, onLog, onUndo }) {
+export default function TodayView({ items, entries, onLog, onUndo, onNoteEntry }) {
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState('');
+
   const today = useMemo(() => {
     const now = new Date();
     return entriesInRange(entries, startOf('day', now), endOf('day', now));
@@ -14,11 +17,21 @@ export default function TodayView({ items, entries, onLog, onUndo }) {
     return c;
   }, [today]);
 
-  const lastAt = useMemo(() => {
+  const lastEntry = useMemo(() => {
     const m = {};
-    for (const e of today) m[e.itemId] = e.at;
+    for (const e of today) m[e.itemId] = e;
     return m;
   }, [today]);
+
+  function startNote(entry) {
+    setEditingId(entry.id);
+    setDraft(entry.note ?? '');
+  }
+
+  function saveNote(entryId) {
+    onNoteEntry(entryId, draft);
+    setEditingId(null);
+  }
 
   if (items.length === 0) {
     return (
@@ -33,6 +46,7 @@ export default function TodayView({ items, entries, onLog, onUndo }) {
     <div className="cards">
       {items.map((item) => {
         const count = counts[item.id] ?? 0;
+        const last = lastEntry[item.id];
         return (
           <div className="card" key={item.id} style={{ '--accent': item.color }}>
             <button
@@ -50,14 +64,27 @@ export default function TodayView({ items, entries, onLog, onUndo }) {
             </button>
 
             <div className="card__foot">
-              <span className="card__last">
-                {count > 0 ? `last at ${timeLabel(lastAt[item.id])}` : 'tap to log'}
-              </span>
-              <button
-                className="undo"
-                onClick={() => onUndo(item.id)}
-                disabled={count === 0}
-              >
+              {editingId === last?.id ? (
+                <div className="card__noteedit">
+                  <input
+                    autoFocus
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && saveNote(editingId)}
+                    placeholder="who, where, why…"
+                  />
+                  <button onClick={() => saveNote(editingId)}>Save</button>
+                </div>
+              ) : (
+                <button
+                  className="card__last"
+                  onClick={() => count > 0 && startNote(last)}
+                  disabled={count === 0}
+                >
+                  {count > 0 ? last?.note || `last at ${timeLabel(last.at)} · + note` : 'tap to log'}
+                </button>
+              )}
+              <button className="undo" onClick={() => onUndo(item.id)} disabled={count === 0}>
                 Undo
               </button>
             </div>

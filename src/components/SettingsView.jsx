@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { PALETTE } from '../storage.js';
 
+const CONFIRM_REPLACE = 'Replace ALL data on this device with the file you pick? This deletes anything logged here first. Cannot be undone.';
+
 export default function SettingsView({
   items,
   entryCount,
@@ -14,6 +16,13 @@ export default function SettingsView({
   const [label, setLabel] = useState('');
   const [color, setColor] = useState(PALETTE[0].value);
   const fileRef = useRef(null);
+  const modeRef = useRef('merge');
+
+  function pickFile(mode) {
+    if (mode === 'replace' && !confirm(CONFIRM_REPLACE)) return;
+    modeRef.current = mode;
+    fileRef.current?.click();
+  }
 
   function submit() {
     if (!label.trim()) return;
@@ -89,8 +98,11 @@ export default function SettingsView({
         <button className="btn" onClick={onExport}>
           Export backup
         </button>
-        <button className="btn" onClick={() => fileRef.current?.click()}>
-          Import backup
+        <button className="btn" onClick={() => pickFile('merge')}>
+          Import (merge)
+        </button>
+        <button className="btn" onClick={() => pickFile('replace')}>
+          Import (replace)
         </button>
         <input
           ref={fileRef}
@@ -99,11 +111,16 @@ export default function SettingsView({
           hidden
           onChange={(e) => {
             const f = e.target.files?.[0];
-            if (f) onImport(f);
+            if (f) onImport(f, modeRef.current);
             e.target.value = '';
           }}
         />
       </div>
+      <p className="note">
+        <strong>Merge</strong> adds the file's entries on top of what's already here — items
+        with matching names are reused rather than duplicated. <strong>Replace</strong> wipes
+        this device first. Merge is what you want almost always.
+      </p>
       <button className="btn btn--danger" onClick={onClearAll}>
         Delete everything
       </button>

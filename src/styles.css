@@ -183,9 +183,48 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   padding: 0 18px 12px;
   font-size: 12px;
   color: var(--muted);
+}
+
+.card__last {
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.card__last:disabled {
+  opacity: 0.6;
+}
+
+.card__noteedit {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.card__noteedit input {
+  flex: 1;
+  min-width: 0;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 5px 8px;
+  font-size: 12px;
+  color: var(--chalk);
+}
+
+.card__noteedit button {
+  font-size: 12px;
+  color: var(--accent);
+  flex: none;
 }
 
 .undo {
@@ -389,12 +428,15 @@ button {
 }
 
 .log__row {
-  display: flex;
-  align-items: center;
-  gap: 11px;
   padding: 11px 2px;
   border-bottom: 1px solid var(--line);
   font-size: 14px;
+}
+
+.log__main {
+  display: flex;
+  align-items: center;
+  gap: 11px;
 }
 
 .log__dot {
@@ -426,6 +468,38 @@ button {
   color: var(--muted);
   font-style: italic;
   padding: 12px 2px;
+}
+
+.log__note {
+  display: block;
+  margin: 4px 0 0 19px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.log__noteedit {
+  display: flex;
+  gap: 6px;
+  margin: 5px 0 0 19px;
+}
+
+.log__noteedit input {
+  flex: 1;
+  min-width: 0;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 5px 8px;
+  font-size: 12px;
+  color: var(--chalk);
+}
+
+.log__notesave {
+  font-size: 12px;
+  color: var(--chalk);
+  flex: none;
+  padding: 0 6px;
 }
 
 /* ---------- settings ---------- */

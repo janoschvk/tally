@@ -13,7 +13,48 @@ import {
   timeLabel,
 } from '../dates.js';
 
-export default function HistoryView({ items, entries, onRemoveEntry }) {
+function LogRow({ entry, item, onRemove, onNote }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(entry.note ?? '');
+
+  function save() {
+    onNote(entry.id, draft);
+    setEditing(false);
+  }
+
+  return (
+    <li className="log__row" style={{ '--accent': item?.color ?? '#7C8794' }}>
+      <div className="log__main">
+        <span className="log__dot" />
+        <span className="log__label">{item?.label ?? 'Removed'}</span>
+        <span className="log__time">{timeLabel(entry.at)}</span>
+        <button className="log__del" onClick={() => onRemove(entry.id)} aria-label="Delete entry">
+          ×
+        </button>
+      </div>
+      {editing ? (
+        <div className="log__noteedit">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && save()}
+            placeholder="who, where, why…"
+          />
+          <button className="log__notesave" onClick={save}>
+            Save
+          </button>
+        </div>
+      ) : (
+        <button className="log__note" onClick={() => setEditing(true)}>
+          {entry.note ? entry.note : '+ add note'}
+        </button>
+      )}
+    </li>
+  );
+}
+
+export default function HistoryView({ items, entries, onRemoveEntry, onNoteEntry }) {
   const [period, setPeriod] = useState('week');
   const [anchor, setAnchor] = useState(() => new Date());
 
@@ -114,19 +155,15 @@ export default function HistoryView({ items, entries, onRemoveEntry }) {
       {period === 'day' && (
         <ul className="log">
           {inRange.length === 0 && <li className="log__empty">Nothing logged.</li>}
-          {[...inRange].reverse().map((e) => {
-            const item = items.find((i) => i.id === e.itemId);
-            return (
-              <li className="log__row" key={e.id} style={{ '--accent': item?.color ?? '#7C8794' }}>
-                <span className="log__dot" />
-                <span className="log__label">{item?.label ?? 'Removed'}</span>
-                <span className="log__time">{timeLabel(e.at)}</span>
-                <button className="log__del" onClick={() => onRemoveEntry(e.id)} aria-label="Delete entry">
-                  ×
-                </button>
-              </li>
-            );
-          })}
+          {[...inRange].reverse().map((e) => (
+            <LogRow
+              key={e.id}
+              entry={e}
+              item={items.find((i) => i.id === e.itemId)}
+              onRemove={onRemoveEntry}
+              onNote={onNoteEntry}
+            />
+          ))}
         </ul>
       )}
     </div>

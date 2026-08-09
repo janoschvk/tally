@@ -51,6 +51,10 @@ export default function App() {
     setEntries(store.removeEntry(id));
   }
 
+  function noteEntry(id, note) {
+    setEntries(store.updateEntry(id, { note }));
+  }
+
   function exportData() {
     const data = store.exportData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -63,11 +67,11 @@ export default function App() {
     setToast('Backup saved.');
   }
 
-  async function importData(file) {
+  async function importData(file, mode) {
     try {
-      store.importData(JSON.parse(await file.text()));
+      store.importData(JSON.parse(await file.text()), mode);
       refresh();
-      setToast('Backup restored.');
+      setToast(mode === 'merge' ? 'Backup merged in.' : 'Backup restored.');
     } catch (err) {
       setToast(err.message || "That file isn't a Tally backup.");
     }
@@ -95,10 +99,21 @@ export default function App() {
 
       <main className="main">
         {tab === 'today' && (
-          <TodayView items={items} entries={entries} onLog={log} onUndo={undo} />
+          <TodayView
+            items={items}
+            entries={entries}
+            onLog={log}
+            onUndo={undo}
+            onNoteEntry={noteEntry}
+          />
         )}
         {tab === 'history' && (
-          <HistoryView items={items} entries={entries} onRemoveEntry={removeEntry} />
+          <HistoryView
+            items={items}
+            entries={entries}
+            onRemoveEntry={removeEntry}
+            onNoteEntry={noteEntry}
+          />
         )}
         {tab === 'settings' && (
           <SettingsView
